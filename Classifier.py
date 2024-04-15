@@ -27,11 +27,12 @@ logging.basicConfig(filename='classifier.log', level=logging.INFO, format='%(asc
 
 
 class CustomClassifierHead(nn.Module):
-    def __init__(self, hidden_size, num_labels):
+    def __init__(self, hidden_size):
         super(CustomClassifierHead, self).__init__()
         self.dense = nn.Linear(hidden_size, hidden_size)
         self.dropout = nn.Dropout(0.1)
-        self.out_proj = nn.Linear(hidden_size, num_labels)
+        self.out_proj = nn.Linear(hidden_size, 1) # Binary classification
+
 
     def forward(self, transformer_output):
         x = self.dense(transformer_output)
@@ -48,7 +49,7 @@ class CustomModel(nn.Module):
     def __init__(self, model_name, num_labels):
         super(CustomModel, self).__init__()
         self.transformer = AutoModel.from_pretrained(model_name)
-        self.custom_head = CustomClassifierHead(self.transformer.config.hidden_size, num_labels)
+        self.custom_head = CustomClassifierHead(self.transformer.config.hidden_size)
 
     def forward(self, input_ids, attention_mask):
         transformer_outputs = self.transformer(input_ids=input_ids, attention_mask=attention_mask)
@@ -72,7 +73,7 @@ class Classifier(nn.Module):
         self.val_losses = []
         self.train_accuracies = []
         self.val_accuracies = []
-        self.loss_fn = torch.nn.CrossEntropyLoss()
+        self.loss_fn = torch.nn.BCEWithLogitsLoss()
         self.patience = patience
         self.early_stopping_triggered = False
         self.initial_learning_rate = initial_learning_rate
@@ -142,10 +143,12 @@ class Classifier(nn.Module):
                 labels = labels.to(self.device)
 
                 self.optimizer.zero_grad()
-                logits = self.model(input_ids=inputs['input_ids'],attention_mask=inputs['attention_mask'])
-
-                # loss = torch.nn.functional.cross_entropy(logits, labels)  # Calculate loss
-                loss = self.loss_fn(logits, labels)
+                # logits = self.model(input_ids=inputs['input_ids'],attention_mask=inputs['attention_mask'])
+                #
+                # # loss = torch.nn.functional.cross_entropy(logits, labels)  # Calculate loss
+                # loss = self.loss_fn(logits, labels)
+                logits = self.model(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask']).squeeze(-1)
+                loss = self.loss_fn(logits, labels.float()) # BCEWithLogitsLoss expects float labels
 
                 loss_value = loss.item()
                 total_train_loss += loss_value
@@ -155,7 +158,9 @@ class Classifier(nn.Module):
                 # Update the scheduler after each batch
                 scheduler.step()
 
-                predictions = torch.argmax(logits, dim=-1)
+                # Threshold probabilities to get predictions
+                probabilities = torch.sigmoid(logits)
+                predictions = (probabilities > 0.5).long()
                 correct_train_preds += torch.sum(predictions == labels).item()
                 total_train_preds += labels.size(0)
 
@@ -199,7 +204,6 @@ class Classifier(nn.Module):
         self.logger.info(f"Test Loss: {avg_test_loss}, Test Accuracy: {final_test_accuracy}")
         return final_train_accuracy, final_test_accuracy
 
-
     def evaluate(self, data_loader, context='validation'):
         assert context in ['validation', 'testing'], "Context must be either 'validation' or 'testing'"
 
@@ -228,18 +232,17 @@ class Classifier(nn.Module):
                 logits = self.model(
                     input_ids=inputs['input_ids'],
                     attention_mask=inputs['attention_mask'],
-                )
+                ).squeeze(-1)  # Squeeze the logits to remove the last dimension
 
                 loss = self.loss_fn(logits, labels)
                 total_loss += loss.item()
 
-                # Calculate probabilities from logits
-                probabilities = torch.softmax(logits, dim=1)[:, 1]
-                y_scores.extend(probabilities.cpu().numpy())
-
-                predictions = torch.argmax(logits, dim=-1)
+                # Calculate probabilities from logits using sigmoid
+                probabilities = torch.sigmoid(logits)
+                predictions = (probabilities > 0.5).long()  # Convert probabilities to 0 or 1
                 y_true.extend(labels.cpu().numpy())
                 y_pred.extend(predictions.cpu().numpy())
+                y_scores.extend(probabilities.cpu().numpy())  # Store probabilities for AUC calculation
 
                 correct_preds += (predictions == labels).sum().item()
                 total_preds += labels.size(0)
