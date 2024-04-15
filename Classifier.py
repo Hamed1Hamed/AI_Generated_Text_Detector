@@ -47,9 +47,7 @@ class CustomClassifierHead(nn.Module):
 class CustomModel(nn.Module):
     def __init__(self, model_name, num_labels):
         super(CustomModel, self).__init__()
-        #self.transformer = XLMRobertaModel.from_pretrained(model_name)
         self.transformer = AutoModel.from_pretrained(model_name)
-
         self.custom_head = CustomClassifierHead(self.transformer.config.hidden_size, num_labels)
 
     def forward(self, input_ids, attention_mask):
@@ -61,9 +59,9 @@ class CustomModel(nn.Module):
 
 
 
-class ArabicTextClassifier(nn.Module):
+class Classifier(nn.Module):
     def __init__(self, model_name, num_labels, learning_rate, epochs, checkpoint_path, patience,initial_learning_rate, warmup_epochs):
-        super(ArabicTextClassifier, self).__init__()
+        super(Classifier, self).__init__()
         self.model = CustomModel(model_name, num_labels)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.epochs = epochs
