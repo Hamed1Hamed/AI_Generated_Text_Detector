@@ -66,7 +66,6 @@ class ClassifierDataset(Dataset):
             return_tensors="pt"
         )
 
-
         input_dict = {key: val.squeeze(0) for key, val in encoding.items()}
+        return input_dict, torch.tensor(label, dtype=torch.float)
 
-        return input_dict, torch.tensor(label, dtype=torch.long)
