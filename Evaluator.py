@@ -12,7 +12,7 @@ import numpy as np
 from sklearn.metrics import roc_curve, auc
 import json
 " This class is used to evaluate the model on the testing set."
-class ModelEvaluator:
+class Evaluator:
     def __init__(self, model_path, model_name, num_labels, device):
         # Set up logging
         logging.basicConfig(filename='classifier.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
@@ -29,7 +29,7 @@ class ModelEvaluator:
             self.model.load_state_dict(torch.load(model_path))
             self.device = device
             self.model.to(self.device)
-            self.loss_fn = torch.nn.CrossEntropyLoss()
+            self.loss_fn = torch.nn.BCEWithLogitsLoss() # Use BCEWithLogitsLoss for binary classification
             self.logger.info("Model loaded for evaluation. The model is now evaluating the testing set using existing weights.")
             self.logger.info(f"Model loaded for evaluation. Loaded best model from {model_path}")
         except Exception as e:
@@ -41,28 +41,28 @@ class ModelEvaluator:
         total_loss = 0
         y_true = []
         y_pred = []
-        y_scores = []  # The probabilities for the positive class
+        y_scores = []
 
         progress_bar = tqdm(data_loader, desc="Evaluating (testing set)", leave=True)
         with torch.no_grad():
             for batch in progress_bar:
                 inputs, labels = batch
-                inputs = {k: v.to(self.device) for k, v in inputs.items()}
-                labels = labels.to(self.device)
+                inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+                labels = labels.to(self.model.device)
 
-                logits = self.model(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask'])
-                loss = self.loss_fn(logits, labels)
-                total_loss += loss.item()
+                try:
+                    logits = self.model(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask']).squeeze(-1)
+                    loss = self.loss_fn(logits, labels.float())
+                    total_loss += loss.item()
 
-                # Use softmax for probabilities since we have two output scores
-                probabilities = torch.softmax(logits, dim=1)[:, 1]
-                y_scores.extend(probabilities.cpu().numpy())  # Extend y_scores with the probabilities
+                    probabilities = torch.sigmoid(logits)
+                    predictions = (probabilities > 0.5).long()
+                    y_true.extend(labels.cpu().numpy())
+                    y_pred.extend(predictions.cpu().numpy())
+                    y_scores.extend(probabilities.cpu().numpy())
 
-                # Get the actual predictions
-                predictions = torch.argmax(logits, dim=1)
-                y_pred.extend(predictions.cpu().numpy())
-
-                y_true.extend(labels.cpu().numpy())
+                except Exception as e:
+                    self.logger.error("Error during model evaluation", exc_info=True)
 
             avg_loss = total_loss / len(data_loader)
             accuracy = accuracy_score(y_true, y_pred)
@@ -71,20 +71,11 @@ class ModelEvaluator:
             f1 = f1_score(y_true, y_pred, zero_division=0)
             auc = roc_auc_score(y_true, y_scores)
 
-            self.logger.info("Testing Evaluation Metrics:")
-            self.logger.info(f"  - Average Loss: {avg_loss}")
-            self.logger.info(f"  - Accuracy: {accuracy}")
-            self.logger.info(f"  - Precision: {precision}")
-            self.logger.info(f"  - Recall: {recall}")
-            self.logger.info(f"  - F1 Score: {f1}")
-            self.logger.info(f"  - AUC-ROC: {auc}")
+            self.logger.info("Evaluation completed with the following metrics:")
+            self.logger.info(f"  - Loss: {avg_loss}, Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}, AUC: {auc}")
 
-            self.plot_confusion_matrix(y_true, y_pred)
-            # Plotting ROC Curve
-            auc_score = roc_auc_score(y_true, y_scores)
-            self.plot_roc_curve(y_true, y_scores, auc_score)
+        return avg_loss
 
-            return avg_loss
 
     def plot_roc_curve(self,y_true, y_scores, auc_score):
         fpr, tpr, thresholds = roc_curve(y_true, y_scores)
@@ -134,7 +125,7 @@ def run_evaluation():
 
     # Initialize Model Evaluator
     best_model_path = os.path.join(config['checkpoint_path'], "best_model.pt")
-    model_evaluator = ModelEvaluator(best_model_path, model_name, num_labels=2, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    model_evaluator = Evaluator(best_model_path, model_name, num_labels=2, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
     # Run evaluation
     model_evaluator.evaluate(test_loader)
