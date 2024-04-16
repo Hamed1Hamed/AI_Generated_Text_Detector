@@ -140,7 +140,7 @@ class Classifier(nn.Module):
             for batch in progress_bar:
                 inputs, labels = batch
                 inputs = {k: v.to(self.device) for k, v in inputs.items()}
-                labels = labels.to(self.device)
+                labels = labels.to(self.device).float()  # BCEWithLogitsLoss expects float labels
 
                 self.optimizer.zero_grad()
                 # logits = self.model(input_ids=inputs['input_ids'],attention_mask=inputs['attention_mask'])
@@ -227,7 +227,7 @@ class Classifier(nn.Module):
                 inputs, labels = batch
 
                 inputs = {k: v.to(self.device) for k, v in inputs.items()}
-                labels = labels.to(self.device)
+                labels = labels.to(self.device).float()  # BCEWithLogitsLoss expects float labels
 
                 logits = self.model(
                     input_ids=inputs['input_ids'],
@@ -268,7 +268,10 @@ class Classifier(nn.Module):
         # Append to the evaluation metrics lists
         getattr(self, f'evaluation_accuracies_{context}').append(accuracy)
 
-        self.plot_confusion_matrix(y_true, y_pred, context)
+        # Plot confusion matrices
+        self.plot_absolute_confusion_matrix(y_true, y_pred, context)
+        self.plot_normalized_confusion_matrix(y_true, y_pred, context)  # Plotting normalized matrix
+
         # Plot ROC Curve
         self.plot_roc_curve(y_true, y_scores, auc_roc)
 
@@ -381,15 +384,11 @@ class Classifier(nn.Module):
         plt.savefig('roc_curve.png')
         plt.show()
 
-
-    def plot_confusion_matrix(self, y_true, y_pred, context='validation'):
+    def plot_absolute_confusion_matrix(self, y_true, y_pred, context='validation'):
         assert context in ['validation', 'testing'], "Context must be either 'validation' or 'testing'"
-        self.logger.info(f'Plotting confusion matrix for {context}.')  # Log entry
+        self.logger.info(f'Plotting absolute confusion matrix for {context}.')
 
-        # Define the labels for the confusion matrix
         classes = ['AI-generated', 'Human-written']
-
-        # Compute confusion matrix
         cm = confusion_matrix(y_true, y_pred)
 
         # Calculate sensitivity and specificity
@@ -401,22 +400,49 @@ class Classifier(nn.Module):
         plt.title(
             f'{context.capitalize()} Confusion Matrix\nSensitivity: {sensitivity:.2f}, Specificity: {specificity:.2f}')
         plt.colorbar()
-
         tick_marks = np.arange(len(classes))
         plt.xticks(tick_marks, classes, rotation=45)
         plt.yticks(tick_marks, classes)
-
-        # Label the axes
         plt.xlabel('Predicted Class')
         plt.ylabel('Actual Class')
 
-        # Loop over the data locations to create text annotations
-        fmt = 'd'
         thresh = cm.max() / 2.
         for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-            plt.text(j, i, format(cm[i, j], fmt),
+            plt.text(j, i, format(cm[i, j], 'd'),
                      horizontalalignment="center",
                      color="white" if cm[i, j] > thresh else "black")
+
+        plt.tight_layout()
+        plt.show()
+
+    def plot_normalized_confusion_matrix(self, y_true, y_pred, context='validation'):
+        assert context in ['validation', 'testing'], "Context must be either 'validation' or 'testing'"
+        self.logger.info(f'Plotting normalized confusion matrix for {context}.')
+
+        classes = ['AI-generated', 'Human-written']
+        cm = confusion_matrix(y_true, y_pred)
+        cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+        # Calculate sensitivity and specificity
+        sensitivity = cm[1, 1] / (cm[1, 1] + cm[1, 0]) if cm[1, 1] + cm[1, 0] > 0 else 0
+        specificity = cm[0, 0] / (cm[0, 0] + cm[0, 1]) if cm[0, 0] + cm[0, 1] > 0 else 0
+
+        plt.figure(figsize=(6, 6))
+        plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Blues)
+        plt.title(
+            f'{context.capitalize()} Confusion Matrix (Normalized)\nSensitivity: {sensitivity:.2f}, Specificity: {specificity:.2f}')
+        plt.colorbar()
+        tick_marks = np.arange(len(classes))
+        plt.xticks(tick_marks, classes, rotation=45)
+        plt.yticks(tick_marks, classes)
+        plt.xlabel('Predicted Class')
+        plt.ylabel('Actual Class')
+
+        thresh = cm_normalized.max() / 2.
+        for i, j in itertools.product(range(cm_normalized.shape[0]), range(cm_normalized.shape[1])):
+            plt.text(j, i, format(cm_normalized[i, j], '.2f'),
+                     horizontalalignment="center",
+                     color="white" if cm_normalized[i, j] > thresh else "black")
 
         plt.tight_layout()
         plt.show()
