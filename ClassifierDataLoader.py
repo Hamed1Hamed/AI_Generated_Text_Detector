@@ -17,13 +17,11 @@ class ClassifierDataLoader:
         self.pin_memory = pin_memory
         self.seed = seed
 
-
-
     def get_data_loaders(self):
         logging.info("Creating training data loader.")
         g = torch.Generator()
         g.manual_seed(self.seed)  # Use the seed passed in the constructor
-        train_loader = ClassifierDataLoader(
+        train_loader = DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
             shuffle=True,
@@ -33,7 +31,7 @@ class ClassifierDataLoader:
         )
 
         logging.info("Creating validation data loader.")
-        val_loader = ClassifierDataLoader(
+        val_loader = DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
             shuffle=False,
@@ -42,7 +40,7 @@ class ClassifierDataLoader:
         )
 
         logging.info("Creating test data loader.")
-        test_loader = ClassifierDataLoader(
+        test_loader = DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
             shuffle=False,
@@ -51,3 +49,4 @@ class ClassifierDataLoader:
         )
 
         return train_loader, val_loader, test_loader
+
