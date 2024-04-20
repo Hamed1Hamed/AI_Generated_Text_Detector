@@ -126,6 +126,31 @@ class Evaluator:
         plt.tight_layout()
         plt.show()
 
+    def plot_normalized_confusion_matrix(self, y_true, y_pred):
+        classes = ['AI-generated', 'Human-written']
+        cm = confusion_matrix(y_true, y_pred)
+        cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]  # Normalize the confusion matrix
+
+        plt.figure(figsize=(6, 6))
+        plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Purples)
+        plt.title('Normalized Testing Confusion Matrix')
+        plt.colorbar()
+        tick_marks = np.arange(len(classes))
+        plt.xticks(tick_marks, classes, rotation=45)
+        plt.yticks(tick_marks, classes)
+        plt.xlabel('Predicted Class')
+        plt.ylabel('Actual Class')
+
+        fmt = '.2f'  # Change format from integer to float for normalized matrix
+        thresh = cm_normalized.max() / 2.
+        for i, j in product(range(cm_normalized.shape[0]), range(cm_normalized.shape[1])):
+            plt.text(j, i, format(cm_normalized[i, j], fmt), horizontalalignment="center",
+                     color="white" if cm_normalized[i, j] > thresh else "black")
+
+        plt.tight_layout()
+        plt.show()
+
+
 # Function to run the evaluation independently
 def run_evaluation():
 
