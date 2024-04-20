@@ -46,12 +46,13 @@ class Evaluator:
         progress_bar = tqdm(data_loader, desc="Evaluating (testing set)", leave=True)
         with torch.no_grad():
             for batch in progress_bar:
-                inputs, labels = batch
-                inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-                labels = labels.to(self.model.device)
-
                 try:
-                    logits = self.model(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask']).squeeze(-1)
+                    inputs, labels = batch
+                    inputs = {k: v.to(self.device) for k, v in inputs.items()}
+                    labels = labels.to(self.device)
+
+                    logits = self.model(input_ids=inputs['input_ids'], attention_mask=inputs['attention_mask']).squeeze(
+                        -1)
                     loss = self.loss_fn(logits, labels.float())
                     total_loss += loss.item()
 
@@ -62,20 +63,33 @@ class Evaluator:
                     y_scores.extend(probabilities.cpu().numpy())
 
                 except Exception as e:
-                    self.logger.error("Error during model evaluation", exc_info=True)
+                    self.logger.error("Error during model evaluation: {}".format(e), exc_info=True)
 
             avg_loss = total_loss / len(data_loader)
             accuracy = accuracy_score(y_true, y_pred)
             precision = precision_score(y_true, y_pred, zero_division=0)
             recall = recall_score(y_true, y_pred, zero_division=0)
             f1 = f1_score(y_true, y_pred, zero_division=0)
-            auc = roc_auc_score(y_true, y_scores)
+            auc_score = roc_auc_score(y_true, y_scores)
 
-            self.logger.info("Evaluation completed with the following metrics:")
-            self.logger.info(f"  - Loss: {avg_loss}, Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}, AUC: {auc}")
+            # Logging each metric on a new line
+            self.logger.info("Testing Evaluation Metrics:")
+            self.logger.info(f"  - Average Loss: {avg_loss}")
+            self.logger.info(f"  - Accuracy: {accuracy}")
+            self.logger.info(f"  - Precision: {precision}")
+            self.logger.info(f"  - Recall: {recall}")
+            self.logger.info(f"  - F1 Score: {f1}")
+            self.logger.info(f"  - AUC-ROC: {auc_score}")
 
-        return avg_loss
+            # Log confusion matrix
+            cm = confusion_matrix(y_true, y_pred)
+            self.logger.info(f"  - Confusion Matrix: \n{cm}")
 
+            # Optionally plot results if needed
+            self.plot_roc_curve(y_true, y_scores, auc_score)
+            self.plot_confusion_matrix(y_true, y_pred)
+
+            return avg_loss
 
     def plot_roc_curve(self,y_true, y_scores, auc_score):
         fpr, tpr, thresholds = roc_curve(y_true, y_scores)
