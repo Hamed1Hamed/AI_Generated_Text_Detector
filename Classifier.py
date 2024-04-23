@@ -343,9 +343,9 @@ class Classifier(nn.Module):
 
             # In non-evaluation mode, we plot training data as well
             plt.subplot(1, 2, 1)
-            plt.plot(epochs_range, self.train_losses, label='Training Loss')
+            plt.plot(epochs_range, self.train_losses, label='Training Loss', marker='o')
             plt.subplot(1, 2, 2)
-            plt.plot(epochs_range, self.train_accuracies, label='Training Accuracy')
+            plt.plot(epochs_range, self.train_accuracies, label='Training Accuracy', marker='x')
 
         # We need at least one epoch's worth of data to plot
         if len(losses) == 0 or len(accuracies) == 0:
