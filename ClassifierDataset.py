@@ -20,7 +20,7 @@ data_type_to_filename = {
 class ClassifierDataset(Dataset):
     def __init__(self, tokenizer, data_type):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-        logging.info('Initializing ArabicTextDataset')
+        logging.info('Initializing ClassifierDataset')
 
         # Validate the dataset folder
         if not os.path.isdir(dataset_folder):

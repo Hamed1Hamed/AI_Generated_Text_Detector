@@ -343,9 +343,9 @@ class Classifier(nn.Module):
 
             # In non-evaluation mode, we plot training data as well
             plt.subplot(1, 2, 1)
-            plt.plot(epochs_range, self.train_losses, label='Training Loss', marker='o')
+            plt.plot(epochs_range, self.train_losses, label='Training Loss', marker='x')
             plt.subplot(1, 2, 2)
-            plt.plot(epochs_range, self.train_accuracies, label='Training Accuracy', marker='x')
+            plt.plot(epochs_range, self.train_accuracies, label='Training Accuracy')
 
         # We need at least one epoch's worth of data to plot
         if len(losses) == 0 or len(accuracies) == 0:
@@ -358,13 +358,13 @@ class Classifier(nn.Module):
         # ------- plotting the metrics ------------#
         # Plot losses
         plt.subplot(1, 2, 1)
-        plt.plot(epochs_range, losses, label=loss_label)
+        plt.plot(epochs_range, losses, label=loss_label, marker='o')
         plt.title('Loss over time')
         plt.legend(loc='best')
 
         # Plot accuracies
         plt.subplot(1, 2, 2)
-        plt.plot(epochs_range, accuracies, label=accuracy_label)
+        plt.plot(epochs_range, accuracies, label=accuracy_label, marker='x')
         plt.title('Accuracy over time')
         plt.legend(loc='best')
 
@@ -428,7 +428,7 @@ class Classifier(nn.Module):
         specificity = cm[0, 0] / (cm[0, 0] + cm[0, 1]) if cm[0, 0] + cm[0, 1] > 0 else 0
 
         plt.figure(figsize=(6, 6))
-        plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Blues)
+        plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Reds)
         plt.title(
             f'{context.capitalize()} Confusion Matrix (Normalized)\nSensitivity: {sensitivity:.2f}, Specificity: {specificity:.2f}')
         plt.colorbar()
