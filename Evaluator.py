@@ -88,6 +88,7 @@ class Evaluator:
             # Optionally plot results if needed
             self.plot_roc_curve(y_true, y_scores, auc_score)
             self.plot_confusion_matrix(y_true, y_pred)
+            self.plot_normalized_confusion_matrix(y_true, y_pred)
 
             return avg_loss
 
@@ -132,7 +133,7 @@ class Evaluator:
         cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]  # Normalize the confusion matrix
 
         plt.figure(figsize=(6, 6))
-        plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.Purples)
+        plt.imshow(cm_normalized, interpolation='nearest', cmap=plt.cm.PuBuGn)
         plt.title('Normalized Testing Confusion Matrix')
         plt.colorbar()
         tick_marks = np.arange(len(classes))

@@ -40,11 +40,6 @@ class CustomClassifierHead(nn.Module):
         logits = self.out_proj(x)
         return logits
 
-
-
-
-
-
 class CustomModel(nn.Module):
     def __init__(self, model_name, num_labels):
         super(CustomModel, self).__init__()
@@ -199,9 +194,16 @@ class Classifier(nn.Module):
 
         self.logger.info('Training process completed. Starting testing on the test set.')
 
+        # Load the best model before testing
+        self.load_best_model()
+
         # Testing on the test set after all epochs
         avg_test_loss, final_test_accuracy = self.evaluate(test_loader, 'testing')
         self.logger.info(f"Test Loss: {avg_test_loss}, Test Accuracy: {final_test_accuracy}")
+
+        # Clear the GPU cache here after all training, validation, and testing are complete
+        torch.cuda.empty_cache()
+
         return final_train_accuracy, final_test_accuracy
 
     def evaluate(self, data_loader, context='validation'):
@@ -264,6 +266,10 @@ class Classifier(nn.Module):
         self.logger.info(f"  - Recall: {recall}")
         self.logger.info(f"  - F1 Score: {f1}")
         self.logger.info(f"  - AUC-ROC: {auc_roc}")
+
+        # Log confusion matrix
+        cm = confusion_matrix(y_true, y_pred)
+        self.logger.info(f"  - Confusion Matrix: \n{cm}")
 
         # Append to the evaluation metrics lists
         getattr(self, f'evaluation_accuracies_{context}').append(accuracy)

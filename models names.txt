@@ -1,0 +1,5 @@
+   "model_name": "bert-base-multilingual-cased",
+    "model_name": "xlm-roberta-base",
+    "model_name": "aubmindlab/bert-base-arabertv2",
+    "model_name": "aubmindlab/araelectra-base-discriminator",
+
