@@ -1,4 +1,3 @@
-
 import os
 import torch
 from torch.utils.data import Dataset
@@ -18,12 +17,15 @@ data_type_to_filename = {
     'test': 'Testing.csv'
 }
 
+def remove_arabic_diacritics(text):
+    diacritic_chars = {chr(i) for i in range(0x064B, 0x0660)}
+    return ''.join([char for char in text if char not in diacritic_chars])
+
 class ClassifierDataset(Dataset):
     def __init__(self, tokenizer, data_type):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         logging.info('Initializing ClassifierDataset')
 
-        # Validate the dataset folder
         if not os.path.isdir(dataset_folder):
             logging.error(f"Directory not found: {dataset_folder}")
             raise FileNotFoundError(f"{dataset_folder} does not exist or is not accessible.")
@@ -46,11 +48,13 @@ class ClassifierDataset(Dataset):
             raise RuntimeError("No valid data samples found.")
 
         logging.info(f"Loaded {len(self.samples)} samples.")
+        logging.info('ClassifierDataset initialized with dediacritized text.')
+
 
     def _load_csv(self, file_path):
         df = pd.read_csv(file_path)
         for index, row in df.iterrows():
-            text = row['text']
+            text = remove_arabic_diacritics(row['text'])
             label = int(row['label'])
             self.samples.append((text, label))
 
