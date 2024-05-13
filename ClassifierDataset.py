@@ -18,7 +18,7 @@ data_type_to_filename = {
 }
 
 def remove_arabic_diacritics(text):
-    diacritic_chars = {chr(i) for i in range(0x064B, 0x0660)}
+    diacritic_chars = {chr(i) for i in range(0x064B, 0x065F)}
     return ''.join([char for char in text if char not in diacritic_chars])
 
 class ClassifierDataset(Dataset):
