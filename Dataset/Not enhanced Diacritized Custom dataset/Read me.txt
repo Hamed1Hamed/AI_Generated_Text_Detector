@@ -1,0 +1,1 @@
+These datasets have an issue at the full stop (.) at the end as Farasa diacritization algorithm takes a space after last word then put the space.
