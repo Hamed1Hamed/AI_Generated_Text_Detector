@@ -1,7 +1,7 @@
 {
-   "model_name": "bert-base-multilingual-cased",
-    "learning_rate": 3e-05,
-    "initial_learning_rate": 1e-9,
+   "model_name": "xlm-roberta-base",
+    "learning_rate": 3e-5,
+    "initial_learning_rate": 1e-8,
     "warmup_epochs": 8,
     "epochs": 10,
     "batch_size": 32,

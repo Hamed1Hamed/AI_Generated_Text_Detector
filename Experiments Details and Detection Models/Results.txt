@@ -1,0 +1,34 @@
+Results and Models Download Links
+
+Note: Each download link includes all models trained on the respective dataset and their results.
+
+1) Detection Models Trained on Custom Max (Dediacritized)
+
+    * Description: These models are trained on the largest corpus, the Custom Max dataset, with dediacritization applied to all texts during the training.
+    * Download Link: https://img-cdn.filefactory.com/file/5zstesrcduuq/Custom_Max%20Runs%20%5B%20Dediacritized%20%5D.rar
+
+2) Detection Models Trained on Custom Max (With Diacritics)
+
+    * Description: These models are trained on the largest corpus, the Custom Max dataset, which has some diacritized texts during the training.
+    * Download Link: https://img-cdn.filefactory.com/file/se8z9max39q/Custom_Max%20Run%20%5B%20with%20diacritics%5D.rar
+
+3) Detection Models Trained on De-Diacritized Custom Plus
+
+    * Description: These selected models are trained on the Dediacritized Custom Plus dataset, where diacritics were removed from all texts to test performance in a diacritics-free environment.
+    * Download Link: https://img-cdn.filefactory.com/file/70bdre122xqg/Selected_De-Diacritized%20Custom%20Plus.rar
+
+4) Detection Models Trained on Custom Plus
+
+    * Description: These selected models are trained on the Custom Plus dataset, which has 9% of diacritized (689 examples religious text) texts to make the dataset include some diacritics during the training.
+    * Download Link: https://img-cdn.filefactory.com/file/2zg0qo2qembo/Selected_Custom%20Plus.rar
+
+5) Detection Models Trained on Diacritized Custom Dataset
+
+    * Description: This includes all models trained on the Diacritized Custom dataset, which has examples duplicated to be half diacritized and half non-diacritized of the original Custom dataset.
+    * Download Link: https://img-cdn.filefactory.com/file/5zehh3s5oo6o/Selected_Diacritized%20Custom%20Dataset.rar
+
+6) Detection Models Trained on Religious Dataset
+
+    * Description: These models are trained on the Religious dataset, which includes HWTs from religious texts and AIGTs from various fields.
+    * Download Link: https://img-cdn.filefactory.com/file/125q31ajgxm4/Selected_Religious%20Dataset.rar
+
