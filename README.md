@@ -46,7 +46,7 @@ For inference, use the `Evaluator.py` module. This module is dedicated to evalua
 
 2. **Evaluate the Model**:
 
-    Ensure the `check_point` folder is available in the project directory and contains the `best_weight.pt` file of the model that matches the `config.json` file's `model_name`. Then run:
+    Ensure the `model_checkpoints` folder is available in the project directory and contains the `best_model.pt` file of the model that matches the `config.json` file's `model_name`. Then run:
 
     ```sh
     python Evaluator.py
