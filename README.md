@@ -1,28 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-    .title {
-        text-align: center;
-        font-size: 24px;
-        font-weight: bold;
-        padding: 10px;
-    }
-    .line {
-        height: 10px;
-        background-color: black;
-        margin: 10px 0;
-    }
-</style>
-</head>
-<body>
+# **Toward Robustness of Arabic AI-Generated Text Detection: Tackling Diacritics Challenges**
 
-<div class="line"></div>
-<div class="title">Toward Robustness of Arabic AI-Generated Text Detection: Tackling Diacritics Challenges</div>
-<div class="line"></div>
-
-</body>
-</html>
 
 ## Overview
 
