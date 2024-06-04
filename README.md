@@ -11,7 +11,7 @@ The `Dataset` directory includes the datasets used in our experiments. These dat
 - **Custom Max**: The largest combined dataset of CustomPlus and Custom datasets.
 - **CustomPlus**: Includes 9% diacritized religious texts to incorporate some diacritics during training.
 - **Enhanced Diacritized Custom Dataset**: Dataset with examples duplicated to be half diacritized and half non-diacritized.
-- **Not Enhanced Diacritized Custom Dataset**: Not used in the training, but attached due to make the reader aware of the enhanced Diacritized Custom dataset preprocessing.
+- **Not Enhanced Diacritized Custom Dataset**: Not used in the training, but attached to make the reader aware of the enhanced Diacritized Custom dataset preprocessing.
 - **Pure Custom Dataset**: Dataset containing only non-diacritized texts which is half of Diacritized Custom dataset.
 - **Religious Diac Dataset**: Focuses on religious texts with a higher frequency of diacritics. It includes HWTs from religious texts and AIGTs from various fields.
 
