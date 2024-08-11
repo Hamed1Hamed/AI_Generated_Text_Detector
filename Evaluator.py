@@ -19,6 +19,10 @@ class Evaluator:
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing ModelEvaluator...")
 
+        # Determine device
+        self.device = device if device is not None else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.logger.info(f"Using device: {self.device}")
+
         # Check if the model file exists
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Checkpoint file not found: {model_path}")
